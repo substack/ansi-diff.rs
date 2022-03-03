@@ -5,6 +5,7 @@ type P = u32;
 const CLEAR_LINE: [u32;4] = [0x1b, 0x5b, 0x30, 0x4b];
 const NEWLINE: [u32;1] = [0x0a];
 
+/// Split a string by ansi codes.
 pub fn ansi_split(input: &str) -> Vec<String> {
   lstatic! {
     static ref IS_ANSI: regex::Regex = regex::Regex::new(
@@ -62,6 +63,7 @@ impl Diff {
       lines: vec![],
     }
   }
+  /// Update the terminal `size` in characters: `(columns,lines)`.
   pub fn resize(&mut self, size: (P,P)) {
     self.width = size.0;
     self.height = size.1;
@@ -78,6 +80,7 @@ impl Diff {
       }
     }
   }
+  /// Set the output text to `buffer`. Returns the ansi output diff.
   pub fn update(&mut self, buffer: &str) -> String {
     self.buffer = buffer.to_string();
     let next_lines = Line::split(buffer, self.width);
@@ -192,7 +195,7 @@ impl ToString for Diff {
 }
 
 #[derive(Clone,Debug)]
-pub struct Line {
+struct Line {
   y: P,
   width: P,
   height: P,
