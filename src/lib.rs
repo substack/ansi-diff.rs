@@ -4,14 +4,35 @@ type P = u32;
 const CLEAR_LINE: [u32;4] = [0x1b, 0x5b, 0x30, 0x4b];
 const NEWLINE: [u32;1] = [0x0a];
 
-pub fn ansi_split(input: &str) -> impl Iterator<Item=String>+'_ {
+pub fn ansi_split(input: &str) -> Vec<String> {
   lstatic! {
     static ref IS_ANSI: regex::Regex = regex::Regex::new(
-      r"[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))"
+      r#"(?x)
+        [\u001b\u009b][\[\]()\#;]*(?:(?:(?:[A-Za-z\d]*(?:;[A-Za-z\d]*)*)?\u0007)
+        | (?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PRZcf-ntqry=><~]))
+      "#,
     ).unwrap();
   };
-  IS_ANSI.captures_iter(input)
-    .map(|c| c.get(0).unwrap().as_str().to_string())
+  let mut ptr = 0;
+  let mut result = vec![];
+  let ibytes = input.bytes().collect::<Vec<u8>>();
+  for c in IS_ANSI.captures_iter(input) {
+    let m = c.get(0).unwrap();
+    let part = m.as_str().to_string();
+    let offset = m.start();
+    if ptr != offset && ptr < offset {
+      result.push(String::from_utf8(ibytes[ptr..offset].to_vec()).unwrap());
+    }
+    if ptr == offset && !result.is_empty() {
+      result.last_mut().unwrap().push_str(&part);
+    } else {
+      if offset == 0 { result.push(String::default()) }
+      result.push(part);
+    }
+    ptr = m.end() + 1;
+  }
+  if result.is_empty() { return vec![input.to_string()] }
+  result
 }
 
 pub struct Diff {
@@ -66,7 +87,7 @@ impl Diff {
         if !scrub && self.x != self.width && Self::inline_diff(&a,&b) {
           let left = a.diff_left(b) as usize;
           let right = a.diff_right(b) as usize;
-          let slice = &a.raw[left .. a.length - right];
+          let slice = &a.raw[left .. (a.raw.len() - right).max(left)];
           if left + right > 4 && left + slice.len() < self.width as usize - 1 {
             self.move_to(left as P, a.y);
             self.push(&String::from_iter(slice));
@@ -83,7 +104,7 @@ impl Diff {
       if a.newline { self.newline() }
     }
 
-    for line in &next_lines {
+    for line in &next_lines[min..] {
       self.move_to(0, line.y);
       self.write(line);
       if scrub { self.push(&to_str(CLEAR_LINE)) }
@@ -107,7 +128,10 @@ impl Diff {
       self.clear_down(n);
     }
 
-    // todo: move_to
+    // todo: opts.move_to
+    if let Some(last) = next_last {
+      self.move_to(last.remainder, last.y + last.height);
+    }
 
     self.lines = next_lines;
     self.out.join("")
@@ -161,6 +185,7 @@ impl ToString for Diff {
   }
 }
 
+#[derive(Clone,Debug)]
 pub struct Line {
   y: P,
   width: P,
@@ -174,8 +199,8 @@ pub struct Line {
 
 impl Line {
   pub fn new(s: &str, y: P, nl: bool, term_width: P) -> Self {
-    let parts = ansi_split(s).collect::<Vec<String>>();
-    let length = parts.len();
+    let parts = ansi_split(s);
+    let length = Self::parts_len(&parts);
     let mut height = length as P / term_width;
     let mut remainder = length as P - (height * term_width);
     if height > 0 && remainder == 0 {
@@ -219,6 +244,15 @@ impl Line {
       y += line.height + (if line.newline { 1 } else { 0 });
       line
     }).collect()
+  }
+  fn parts_len(parts: &[String]) -> usize {
+    let mut sum = 0;
+    let mut i = 0;
+    while i < parts.len() {
+      sum += parts.get(i).unwrap().len();
+      i += 2;
+    }
+    sum
   }
 }
 

@@ -1,11 +1,15 @@
+use std::io::Write;
+
 fn main() {
   let mut diff = ansi_diff::Diff::new(get_size());
   // todo: on sigwinch, diff.resize()
+  let start = std::time::Instant::now();
   loop {
     print!["{}", diff.update(&format![
-      "-------------\nthe time is: {:?}\n-------------\n",
-      std::time::Instant::now()
+      "-------------\nseconds elapsed: {:.0} ...\n-------------\n",
+      start.elapsed().as_secs_f32()
     ])];
+    std::io::stdout().flush().unwrap();
     std::thread::sleep(std::time::Duration::from_secs(1));
   }
 }
