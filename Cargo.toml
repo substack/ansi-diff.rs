@@ -3,6 +3,10 @@ name = "ansi-diff"
 version = "1.0.0"
 edition = "2021"
 license = "bsd-2-clause"
+readme = "readme.md"
+repository = "https://github.com/substack/ansi-diff.rs"
+homepage = "https://github.com/substack/ansi-diff.rs"
+documentation = "https://docs.rs/ansi-diff"
 
 [dependencies]
 regex = "1.5.4"
