@@ -2,7 +2,6 @@ use std::io::Write;
 
 fn main() {
   let mut diff = ansi_diff::Diff::new(get_size());
-  // todo: on sigwinch, diff.resize()
   let start = std::time::Instant::now();
   loop {
     print!["{}", diff.update(&format![

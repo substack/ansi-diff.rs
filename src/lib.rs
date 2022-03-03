@@ -1,3 +1,4 @@
+#![doc=include_str!("../readme.md")]
 use lazy_static::lazy_static as lstatic;
 type P = u32;
 
@@ -49,6 +50,7 @@ pub struct Diff {
 }
 
 impl Diff {
+  /// Create a new Diff instance with a terminal `size` in characters: `(columns,lines)`.
   pub fn new(size: (P,P)) -> Self {
     Diff {
       x: 0,
@@ -60,9 +62,9 @@ impl Diff {
       lines: vec![],
     }
   }
-  pub fn resize(&mut self, width: P, height: P) {
-    self.width = width;
-    self.height = height;
+  pub fn resize(&mut self, size: (P,P)) {
+    self.width = size.0;
+    self.height = size.1;
     let buf = self.buffer.clone();
     self.update(&buf);
     match self.lines.last() {
