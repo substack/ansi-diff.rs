@@ -160,18 +160,19 @@ impl Diff {
     self.y += 1;
   }
   fn clear_down(&mut self, y: P) {
-    let x = self.x;
+    let mut x = self.x;
     let mut i = self.y;
     while i <= y {
       self.move_to(x, i);
       self.push(&to_str(CLEAR_LINE));
+      x = 0;
       i += 1;
     }
   }
-  fn move_up(n: P) -> String { to_str([0x1b, 0x5b, n, 0x41]) }
-  fn move_down(n: P) -> String { to_str([0x1b, 0x5b, n, 0x42]) }
-  fn move_right(n: P) -> String { to_str([0x1b, 0x5b, n, 0x43]) }
-  fn move_left(n: P) -> String { to_str([0x1b, 0x5b, n, 0x44]) }
+  fn move_up(n: P) -> String { code1(&[0x1b, 0x5b], n, &[0x41]) }
+  fn move_down(n: P) -> String { code1(&[0x1b, 0x5b], n, &[0x42]) }
+  fn move_right(n: P) -> String { code1(&[0x1b, 0x5b], n, &[0x43]) }
+  fn move_left(n: P) -> String { code1(&[0x1b, 0x5b], n, &[0x44]) }
   fn write(&mut self, line: &Line) {
     self.out.push(line.to_string());
     self.x = line.remainder;
@@ -237,7 +238,7 @@ impl Line {
   }
   pub fn split(input: &str, term_width: P) -> Vec<Self> {
     let mut y = 0;
-    let lines = input.lines().collect::<Vec<&str>>();
+    let lines = input.split('\n').collect::<Vec<&str>>();
     let len = lines.len();
     lines.iter().enumerate().map(move |(i,line)| {
       let line = Line::new(line, y, i < len - 1, term_width);
@@ -272,4 +273,11 @@ impl PartialEq for Line {
 fn to_str<const N: usize>(xs: [u32;N]) -> String {
   let chars = xs.iter().map(|c| char::from_u32(*c).unwrap()).collect::<Vec<char>>();
   String::from_iter(&chars)
+}
+
+fn code1(pre: &[u32], n: P, post: &[u32]) -> String {
+  let sn = format!["{}", n];
+  let spre = String::from_iter(pre.iter().map(|c| char::from_u32(*c).unwrap()));
+  let spost = String::from_iter(post.iter().map(|c| char::from_u32(*c).unwrap()));
+  spre + &sn + &spost
 }
