@@ -29,7 +29,10 @@ pub fn ansi_split(input: &str) -> Vec<String> {
       if offset == 0 { result.push(String::default()) }
       result.push(part);
     }
-    ptr = m.end() + 1;
+    ptr = m.end();
+  }
+  if ptr < ibytes.len() {
+    result.push(String::from_utf8(ibytes[ptr..].to_vec()).unwrap());
   }
   if result.is_empty() { return vec![input.to_string()] }
   result

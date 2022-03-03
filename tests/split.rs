@@ -6,7 +6,7 @@ fn split() {
   ];
   assert_eq![
     ansi_diff::ansi_split("\x1b[31mhello\x1b[39m cool ok"),
-    vec!["", "\x1b[31m", "hello", "\x1b[39m", "cool ok"]
+    vec!["", "\x1b[31m", "hello", "\x1b[39m", " cool ok"]
   ];
   assert_eq![
     ansi_diff::ansi_split(
