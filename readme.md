@@ -3,8 +3,8 @@
 diff successive buffers with embedded ansi codes in rust, outputting a minimal change
 
 You can use this crate to build command-line interfaces in an "immediate mode" way where you can
-produce pages of output which will be diffed to avoid the flicker you would otherwise get with that
-otherwise convenient approach from clearing the whole screen between updates.
+produce pages of output which will be diffed to avoid the flicker you would otherwise get if you
+cleared the whole screen between updates, but preserving the convenience of that approach.
 
 You can include ansi codes for formatting your output but codes that adjust the cursor position are
 not (yet) supported. You can manage cursor positions to place panes of content using the output of
