@@ -40,6 +40,7 @@ pub fn ansi_split(input: &str) -> Vec<String> {
   result
 }
 
+#[derive(Debug,Clone)]
 pub struct Diff {
   x: P,
   y: P,
@@ -194,7 +195,7 @@ impl ToString for Diff {
   }
 }
 
-#[derive(Clone,Debug)]
+#[derive(Debug,Clone)]
 struct Line {
   y: P,
   width: P,
