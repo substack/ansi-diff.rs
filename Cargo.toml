@@ -1,6 +1,6 @@
 [package]
 name = "ansi-diff"
-version = "1.0.1"
+version = "1.1.0"
 description = "diff successive buffers with embedded ansi codes, outputting a minimal change"
 edition = "2021"
 license = "BSD-2-Clause"
